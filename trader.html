@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Colorlib Templates">
+    <meta name="author" content="Colorlib">
+    <meta name="keywords" content="Colorlib Templates">
+
+    <!-- Title Page-->
+    <title>Ultimate Trder</title>
+
+    <!-- Icons font CSS-->
+    <link href="vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet" media="all">
+    <link href="vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
+    <!-- Font special for pages-->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Vendor CSS-->
+    <link href="vendor/select2/select2.min.css" rel="stylesheet" media="all">
+    <link href="vendor/datepicker/daterangepicker.css" rel="stylesheet" media="all">
+
+    <!-- Main CSS-->
+    <link href="css/main.css" rel="stylesheet" media="all">
+</head>
+
+<!-- Include the plugin //-->
+<script src="https://kite.trade/publisher.js?v=3"></script>
+
+
+<style>
+        .button {
+          display: inline-block;
+          border-radius: 4px;
+          
+          border: none;
+          color: #FFFFFF;
+          text-align: center;
+          font-size: 28px;
+          padding: 20px;
+          width: 200px;
+          transition: all 0.5s;
+          cursor: pointer;
+          margin: 5px;
+        }
+        
+        .button span {
+          cursor: pointer;
+          display: inline-block;
+          position: relative;
+          transition: 0.5s;
+        }
+        
+        .button span:after {
+          content: '\00bb';
+          position: absolute;
+          opacity: 0;
+          top: 0;
+          right: -20px;
+          transition: 0.5s;
+        }
+        
+        .button:hover span {
+          padding-right: 25px;
+        }
+        
+        .button:hover span:after {
+          opacity: 1;
+          right: 0;
+        }
+        </style>
+
+<body>
+<button class="button" 
+style="background-color: #2c1ef4;"
+style="vertical-align:middle" onclick="cal()"><span>Calculate </span></button>
+    <div class="page-wrapper bg-gra-02 p-t-130 p-b-100 font-poppins">
+    
+    <form method="POST">
+            <div class="input-group">
+                    <label class="label">Stock</label>
+                            <div autocomplete="off">
+                                    <input class ="input--style-4" id="myInput" type="text" name="stock" placeholder="Select">
+                            </div>
+                </div>
+            
+        <div class="row row-space">
+            <div class="col-2">
+                <div class="input-group">
+                    <label class="label">Trigger</label>
+                    <input class="input--style-4"  type="number" id="trigger">
+                </div>
+            </div>
+
+            <div class="col-2">
+                <div class="input-group">
+                    <label class="label">Exit</label>
+                    <input class="input--style-4" type="number" id="exit" onblur="per()">
+                </div>
+            </div>
+
+            <div class="col-2">
+                <div class="input-group">
+                    <label class="label">Price</label>
+                    <input class="input--style-4" type="number" id="price">
+                </div>
+            </div>
+        </div>
+        <div class="row row-space">
+                <div class="col-2">
+                        <div class="input-group">
+                            <label class="label">Loss Amount</label>
+                            <input class="input--style-4" type="number" id="loss_amount"
+                            onblur="cal()">
+                        </div>
+                    </div>
+            <div class="col-2">
+                <div class="input-group">
+                    <label class="label">S-L %</label>
+                    <input class="input--style-4" type="number" tabstop="false" tabindex="1" id="relation">
+                </div>
+            </div>
+            
+        </div>
+        <div class="row row-space">
+                <div class="col-2">
+                        <div class="input-group">
+                            <label class="label">Stop Loss</label>
+                            <input class="input--style-4" type="number"
+                            tabstop="false" tabindex="1" id="stop_loss">
+                        </div>
+                    </div>
+            <div class="col-2">
+                <div class="input-group">
+                    <label class="label">Target 1</label>
+                    <input class="input--style-4" type="number" 
+                    tabstop="false" tabindex="1"
+                    id="target_1">
+                </div>
+            </div>
+            <div class="col-2">
+                    <div class="input-group">
+                        <label class="label">Target 2</label>
+                        <input class="input--style-4" type="number" 
+                        tabstop="false" tabindex="1"
+                        id="target_2">
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-2">
+                    <div class="input-group">
+                        <label class="label">Quantity</label>
+                        <input class="input--style-4" type="number" 
+                        tabstop="false" tabindex="1"
+                        id="quantity">
+                    </div>
+                </div>
+
+        </div>
+
+    <div class="row row-space">
+        <div class="col-2">
+            <div class="p-t-15">
+                    <button id="buy" class="button"
+                    style="background-color: #12c530;" 
+                    style="vertical-align:middle"><span>Buy </span></button>
+            </div>
+        </div>
+        <br>
+        <div class="col-2">
+                <div class="p-t-15">
+<button id="sell" class="button" 
+style="background-color: #f71010;"
+style="vertical-align:middle"><span>Sell </span></button>
+
+                </div>
+            </div>
+            
+                    </div>
+
+                    </form>
+                </div>
+     
+</body>
+    <script>
+            document.getElementById("loss_amount").value = 125;
+    </script>
+
+    <script>
+
+        // Only run your custom code once KiteConnect has fully initialised.
+        // Use KiteConnect.ready() to achieve this.
+        
+        var trigger,exit,stop_loss,price,quantity,target_1,target_2,loss_amount,relation,stock;
+        var dict ={}
+    
+        // function for calculate button
+        function cal(){
+
+            trigger= Number(document.getElementById("trigger").value) ;
+            exit= Number(document.getElementById("exit").value) ;
+            loss_amount = document.getElementById("loss_amount").value;
+            price = Number( document.getElementById("price").value)
+            stop_loss = Math.abs(trigger-exit);
+            relation = ((stop_loss/trigger)*100).toFixed(2);
+            quantity = Math.floor(loss_amount/stop_loss); 
+            target_1 = stop_loss*2;
+            target_2 = stop_loss*10;
+            stock = document.getElementById("myInput").value;
+            document.getElementById("loss_amount").value = loss_amount;
+            document.getElementById("stop_loss").value = stop_loss;
+            document.getElementById("relation").value = relation;
+            document.getElementById("target_1").value = target_1;
+            document.getElementById("target_2").value = target_2;
+            document.getElementById("quantity").value = quantity;
+        
+        //for buyying
+            KiteConnect.ready(function(){
+            var kite = new KiteConnect("3e3vtuunvwmwty7g");
+
+            dict = {
+                "exchange": "NSE",
+                "transaction_type": "BUY",
+                "order_type": "SL",
+                "product": "MIS",
+                "tradingsymbol" : stock,
+                "quantity" : Number(document.getElementById("quantity").value),
+                "stoploss" : Number(document.getElementById("stop_loss").value),
+                "trigger_price": Number(document.getElementById("trigger").value),
+                "price": Number(document.getElementById("price").value),
+                "variety": "bo",
+                "squareoff": Number(document.getElementById("stop_loss").value)*2,
+                "readonly": false
+            }
+            console.log(dict,+" buy")
+
+            kite.add(dict);
+            kite.add(
+                {
+                    "exchange": "NSE",
+                    "transaction_type": "BUY",
+                    "order_type": "SL",
+                    "product": "MIS",
+                    "tradingsymbol" : stock,
+                    "quantity" : Number(document.getElementById("quantity").value),
+                "stoploss" : Number(document.getElementById("stop_loss").value),
+                "trigger_price": Number(document.getElementById("trigger").value),
+                "price": Number(document.getElementById("price").value),
+                "variety": "bo",
+                "squareoff": Number(document.getElementById("stop_loss").value)*10,
+                    "readonly": false
+                }
+            );
+
+                // Register an (optional) callback.
+        kite.finished(function(status, request_token) {
+            alert("Finished. Status is " + status);
+        });
+        kite.link("#buy");
+            });
+
+        // for selling
+            KiteConnect.ready(function(){
+            var kite = new KiteConnect("3e3vtuunvwmwty7g");
+
+            dict = {
+                "exchange": "NSE",
+                "transaction_type": "SELL",
+                "order_type": "SL",
+                "product": "MIS",
+                "tradingsymbol" : stock,
+                "quantity" : Number(document.getElementById("quantity").value),
+                "stoploss" : Number(document.getElementById("stop_loss").value),
+                "trigger_price": Number(document.getElementById("trigger").value),
+                "price": Number(document.getElementById("price").value),
+                "variety": "bo",
+                "squareoff": Number(document.getElementById("stop_loss").value)*2,
+                "readonly": false
+            }
+            // JSON.stringify(dict);
+            console.log(dict)
+
+            kite.add(dict);
+
+            kite.add(
+                {
+                    "exchange": "NSE",
+                    "transaction_type": "SELL",
+                    "order_type": "SL",
+                    "product": "MIS",
+                    "tradingsymbol" : stock,
+                    "quantity" : Number(document.getElementById("quantity").value),
+                    "stoploss" : Number(document.getElementById("stop_loss").value),
+                    "trigger_price": Number(document.getElementById("trigger").value),
+                    "price": Number(document.getElementById("price").value),
+                    "variety": "bo",
+                    "squareoff": Number(document.getElementById("stop_loss").value)*10,
+                    "readonly": false
+                }
+            );
+
+                // Register an (optional) callback.
+        kite.finished(function(status, request_token) {
+            alert("Finished. Status is " + status);
+        });
+        kite.link("#sell");
+            });
+        } 
+        
+    
+        //function for price calculator
+        function per(){
+
+            trigger= Number(document.getElementById("trigger").value) ;
+        exit= Number(document.getElementById("exit").value) ;
+        
+            if(trigger>exit){
+            console.log("per")
+
+                trigger *= 1.001;
+            }
+            else  if(trigger<exit){
+                trigger *= 0.999;
+            }
+            else if(trigger==exit){
+            console.log("bb")
+                alert("Invalid");
+            }
+
+            document.getElementById("price").value =  trigger.toFixed(2);
+        }
+    </script>
+
+    <script>
+    //auto complete function
+            function autocomplete(inp, arr) {
+                /*the autocomplete function takes two arguments,
+                the text field element and an array of possible autocompleted values:*/
+                var currentFocus;
+                /*execute a function when someone writes in the text field:*/
+                inp.addEventListener("input", function(e) {
+                    var a, b, i, val = this.value;
+                    /*close any already open lists of autocompleted values*/
+                    closeAllLists();
+                    if (!val) { return false;}
+                    currentFocus = -1;
+                    /*create a DIV element that will contain the items (values):*/
+                    a = document.createElement("DIV");
+                    a.setAttribute("id", this.id + "autocomplete-list");
+                    a.setAttribute("class", "autocomplete-items");
+                    /*append the DIV element as a child of the autocomplete container:*/
+                    this.parentNode.appendChild(a);
+                    /*for each item in the array...*/
+                    for (i = 0; i < arr.length; i++) {
+                      /*check if the item starts with the same letters as the text field value:*/
+                      if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                        /*create a DIV element for each matching element:*/
+                        b = document.createElement("DIV");
+                        /*make the matching letters bold:*/
+                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                        b.innerHTML += arr[i].substr(val.length);
+                        /*insert a input field that will hold the current array item's value:*/
+                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                        /*execute a function when someone clicks on the item value (DIV element):*/
+                            b.addEventListener("click", function(e) {
+                            /*insert the value for the autocomplete text field:*/
+                            inp.value = this.getElementsByTagName("input")[0].value;
+                            /*close the list of autocompleted values,
+                            (or any other open lists of autocompleted values:*/
+                            closeAllLists();
+                        });
+                        a.appendChild(b);
+                      }
+                    }
+                });
+                /*execute a function presses a key on the keyboard:*/
+                inp.addEventListener("keydown", function(e) {
+                    var x = document.getElementById(this.id + "autocomplete-list");
+                    if (x) x = x.getElementsByTagName("div");
+                    if (e.keyCode == 40) {
+                      /*If the arrow DOWN key is pressed,
+                      increase the currentFocus variable:*/
+                      currentFocus++;
+                      /*and and make the current item more visible:*/
+                      addActive(x);
+                    } else if (e.keyCode == 38) { //up
+                      /*If the arrow UP key is pressed,
+                      decrease the currentFocus variable:*/
+                      currentFocus--;
+                      /*and and make the current item more visible:*/
+                      addActive(x);
+                    } else if (e.keyCode == 13) {
+                      /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                      e.preventDefault();
+                      if (currentFocus > -1) {
+                        /*and simulate a click on the "active" item:*/
+                        if (x) x[currentFocus].click();
+                      }
+                    }
+                });
+                function addActive(x) {
+                  /*a function to classify an item as "active":*/
+                  if (!x) return false;
+                  /*start by removing the "active" class on all items:*/
+                  removeActive(x);
+                  if (currentFocus >= x.length) currentFocus = 0;
+                  if (currentFocus < 0) currentFocus = (x.length - 1);
+                  /*add class "autocomplete-active":*/
+                  x[currentFocus].classList.add("autocomplete-active");
+                }
+                function removeActive(x) {
+                  /*a function to remove the "active" class from all autocomplete items:*/
+                  for (var i = 0; i < x.length; i++) {
+                    x[i].classList.remove("autocomplete-active");
+                  }
+                }
+                function closeAllLists(elmnt) {
+                  /*close all autocomplete lists in the document,
+                  except the one passed as an argument:*/
+                  var x = document.getElementsByClassName("autocomplete-items");
+                  for (var i = 0; i < x.length; i++) {
+                    if (elmnt != x[i] && elmnt != inp) {
+                    x[i].parentNode.removeChild(x[i]);
+                  }
+                }
+              }
+              /*execute a function when someone clicks in the document:*/
+              document.addEventListener("click", function (e) {
+                  closeAllLists(e.target);
+              });
+              }
+        
+              var stocks = ['AARTIIND', 'ABCAPITAL', 'ABFRL', 'ACC', 'ACE', 'ADANIENT', 'ADANIGREEN', 'ADANIPORTS', 'ADANIPOWER', 'AIAENG', 'ALBK', 'ALLCARGO', 'AMARAJABAT', 'AMBUJACEM', 'ANANTRAJ', 'ANDHRSUGAR', 'APOLLOHOSP', 'APOLLOTYRE', 'APTECHT', 'ARVIND', 'ASHOKA', 'ASHOKLEY', 'ASIANPAINT', 'ASTERDM', 'ASTRON', 'ATUL', 'AUBANK', 'AUROPHARMA', 'AVANTIFEED', 'AXISBANK', 'BAJAJ-AUTO', 'BAJAJELEC', 'BAJAJFINSV', 'BAJFINANCE', 'BALKRISIND', 'BALMLAWRIE', 'BALRAMCHIN', 'BANDHANBNK', 'BANKBARODA', 'BANKINDIA', 'BATAINDIA', 'BEL', 'BEML', 'BEPL', 'BERGEPAINT', 'BFINVEST', 'BFUTILITIE', 'BHARATFORG', 'BHARTIARTL', 'BHEL', 'BIOCON', 'BIRLAMONEY', 'BODALCHEM', 'BOMDYEING', 'BOROSIL', 'BOSCHLTD', 'BPCL', 'BRIGADE', 'BRITANNIA', 'BSE', 'BSOFT', 'CADILAHC', 'CANBK', 'CANFINHOME', 'CAPLIPOINT', 
+              'CARERATING', 'CASTROLIND', 'CDSL', 'CEATLTD', 'CENTRALBK', 'CENTURYPLY', 'CENTURYTEX', 'CESC', 'CHENNPETRO', 'CHOLAFIN', 'CIPLA', 'COALINDIA', 'COLPAL', 
+              'CONCOR', 'CORPBANK', 'CPSEETF', 'CUB', 'CUMMINSIND', 'DAAWAT', 'DABUR', 'DALMIASUG', 'DBL', 'DCBBANK', 'DCMSHRIRAM', 'DCW', 'DEEPAKFERT', 'DEEPAKNTR', 'DELTACORP', 'DHAMPURSUG', 'DHFL', 'DISHTV', 'DIVISLAB', 'DLF', 'DMART', 'DRREDDY', 'DWARKESH', 'EDELWEISS', 'EICHERMOT', 'EIDPARRY', 'EMAMILTD', 'ENGINERSIN', 'EQUITAS', 'ESCORTS', 'EVEREADY', 'EXIDEIND', 'FACT', 'FCONSUMER', 'FEDERALBNK', 'FORCEMOT', 'FORTIS', 'FRETAIL', 'FSL', 'GAIL', 'GATI', 'GDL', 'GICHSGFIN', 'GICRE', 'GLAXO', 'GLENMARK', 'GMDCLTD', 'GMRINFRA', 'GNFC', 'GODREJCP', 'GODREJIND', 'GODREJPROP', 'GOLDBEES', 'GPIL', 'GRANULES', 'GRAPHITE', 'GRASIM', 'GRSE', 'GRUH', 'GSFC', 'GSKCONS', 'GSPL', 'GUJGASLTD', 'HATHWAY', 'HAVELLS', 'HCLTECH', 'HDFC', 'HDFCAMC', 'HDFCBANK', 'HDFCLIFE', 'HEG', 'HEIDELBERG', 'HEROMOTOCO', 'HEXAWARE', 'HFCL', 'HINDALCO', 'HINDCOPPER', 'HINDOILEXP', 'HINDPETRO', 'HINDUNILVR', 'HINDZINC', 'HSCL', 'HSIL', 'HUDCO', 'IBREALEST', 'IBULHSGFIN', 'IBVENTURES', 'ICICIB22', 'ICICIBANK', 'ICICIGI', 'ICICIPRULI', 'ICIL', 'IDBI', 'IGL', 'INDIACEM', 'INDIAGLYCO', 'INDIAMART', 'INDIANB', 
+              'INDIANHUME', 'INDIGO', 'INDUSINDBK', 'INFIBEAM', 'INFRATEL', 'INFY', 'IOC', 
+              'IOLCP', 'IPCALAB', 'IRB', 'ISEC', 'ITC', 'ITDCEM', 'ITI', 'J&KBANK', 'JAICORPLTD', 'JAMNAAUTO', 'JAYSREETEA', 'JINDALSAW', 'JINDALSTEL', 'JISLJALEQS', 'JKIL', 'JKPAPER', 'JKTYRE', 'JMFINANCIL', 'JSL', 'JSLHISAR', 'JSWENERGY', 'JSWSTEEL', 'JUBILANT', 'JUBLFOOD', 'JUSTDIAL', 'KAJARIACER', 'KALPATPOWR', 'KANSAINER', 'KARURVYSYA', 'KEC', 'KEI', 'KESORAMIND', 'KHADIM', 'KIRIINDUS', 'KOLTEPATIL', 'KOTAKBANK', 'KPITTECH', 'KRBL', 'KSCL', 'KTKBANK', 'L&TFH', 'LAKSHVILAS', 'LEMONTREE', 'LIBERTSHOE', 'LICHSGFIN', 'LIQUIDBEES', 'LT', 'LTI', 'LTTS', 'LUPIN', 'M&M', 'M&MFIN', 'MADRASFERT', 'MAHINDCIE', 'MALUPAPER', 'MANAPPURAM', 'MANPASAND', 'MARICO', 'MARKSANS', 'MARUTI', 'MAYURUNIQ', 'MCDOWELL-N', 'MCX', 'MEGH', 'METROPOLIS', 'MFSL', 'MINDAIND', 'MINDTREE', 'MIRZAINT', 
+              'MMTC', 'MOIL', 'MOREPENLAB', 'MOTHERSUMI', 'MUNJALAU', 'MUNJALSHOW', 'MUTHOOTFIN', 'NATCOPHARM', 'NATIONALUM', 'NAUKRI', 'NBCC', 'NCC', 'NELCO', 'NESTLEIND', 'NETWORK18', 'NFL', 'NHPC', 'NIFTYBEES', 'NIITLTD', 'NIITTECH', 'NLCINDIA', 'NMDC', 'NOCIL', 'NRBBEARING', 'NTPC', 'OBEROIRLTY', 'OFSS', 'OIL', 'ONGC', 'ORIENTBANK', 'ORIENTCEM', 'ORIENTPPR', 'PAGEIND', 'PARAGMILK', 'PCJEWELLER', 'PEL', 'PETRONET', 'PFC', 'PHILIPCARB', 'PIDILITIND', 'PIIND', 'PNB', 'PNBHOUSING', 'POLYCAB', 'POWERGRID', 'PRAJIND', 'PRAKASH', 'PRESTIGE', 'PTC', 'PVR', 'QUESS', 'RADICO', 'RAIN', 'RAJESHEXPO', 'RALLIS', 'RAMCOCEM', 'RAMKY', 'RAYMOND', 'RBLBANK', 'RCF', 'RECLTD', 'REDINGTON', 'RELAXO', 'RELCAPITAL', 
+              'RELIANCE', 'RELINFRA', 'RESPONIND', 'RICOAUTO', 'RIIL', 'RITES', 'RNAM', 'RSSOFTWARE', 'RUCHIRA', 'RVNL', 'SAIL', 'SBILIFE', 'SBIN', 'SCI', 'SEQUENT', 'SESHAPAPER', 'SETCO', 'SHANKARA', 'SHREECEM', 'SIEMENS', 'SIMPLEXINF', 'SJVN', 'SOBHA', 'SOMANYCERA', 'SONATSOFTW', 'SOUTHBANK', 'SPARC', 'SPICEJET', 'SREINFRA', 'SRF', 'SRTRANSFIN', 'STAR', 'STRTECH', 'SUBROS', 'SUNPHARMA', 'SUNTV', 'SUVEN', 'SYNDIBANK', 'TATACHEM', 'TATACOFFEE', 'TATACOMM', 'TATAELXSI', 'TATAGLOBAL', 'TATAMOTORS', 'TATAMTRDVR', 'TATAPOWER', 'TATASTEEL', 'TATASTLBSL', 'TCS', 'TECHM', 'THOMASCOOK', 'TIMETECHNO', 'TINPLATE', 'TIRUMALCHM', 'TITAN', 'TNPL', 'TORNTPHARM', 'TORNTPOWER', 'TRENT', 'TRIDENT', 'TRIVENI', 'TV18BRDCST', 'TVSMOTOR', 'TWL', 'UBL', 'UJJIVAN', 'ULTRACEMCO', 'UNIONBANK', 'UPL', 'UTTAMSUGAR', 'V2RETAIL', 'VAKRANGEE', 'VBL', 'VEDL', 'VENKEYS', 'VGUARD', 'VINATIORGA', 'VIPCLOTHNG', 'VIPIND', 'VIVIMEDLAB', 'VOLTAS', 'WELCORP', 'WHIRLPOOL', 'WIPRO', 'WOCKPHARMA', 'WSTCSTPAPR', 'YESBANK', 'ZEEL']
+            </script>
+
+    <script>autocomplete(document.getElementById("myInput"), stocks);</script>
+
+
+</html>
+<!-- end document-->
