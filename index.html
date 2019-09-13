@@ -159,14 +159,12 @@
     </div>
 
 </body>
-<script>
-    document.getElementById("loss_amount").value = 125;
-</script>
 
 <script>
 
     // Only run your custom code once KiteConnect has fully initialised.
     // Use KiteConnect.ready() to achieve this.
+    document.getElementById("loss_amount").value = 125;
 
     var trigger, exit, stop_loss, price, quantity, target_1, target_2, loss_amount, relation, stock;
     var dict = {}
@@ -185,10 +183,10 @@
         target_2 = stop_loss * 10;
         stock = document.getElementById("myInput").value;
         document.getElementById("loss_amount").value = loss_amount;
-        document.getElementById("stop_loss").value = stop_loss;
+        document.getElementById("stop_loss").value = stop_loss.toFixed(2);
         document.getElementById("relation").value = relation;
-        document.getElementById("target_1").value = target_1;
-        document.getElementById("target_2").value = target_2;
+        document.getElementById("target_1").value = target_1.toFixed(2);
+        document.getElementById("target_2").value = target_2.toFixed(2);
         document.getElementById("quantity").value = quantity;
 
         //for buyying
