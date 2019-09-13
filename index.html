@@ -304,7 +304,36 @@
             alert("Invalid");
         }
 
-        document.getElementById("price").value = trigger.toFixed(2);
+        var p = trigger.toFixed(2);
+            console.log(p)
+
+            p = (p.toString().split('.'))
+            console.log(p)
+            p[0] =(Number(p[0]))
+            p[1] =(Number(p[1]))
+            console.log(p[1]%10)
+            if(p[1]/10 !=9 && p[1] !==0)
+            {
+                if( p[1]%10 > 5){
+                    p[1]=((Math.floor(p[1]/10))+1)*10
+                console.log(p[1])
+                }
+                else if( p[1]%10 <= 5){
+
+                    p[1] =((Math.floor(p[1]/10))*10)+5
+                    console.log(p[1]+"pp")
+
+                }
+                var d = Number( p[0]+"."+Math.round(p[1]).toString())
+
+                document.getElementById("price").value =  d;
+            }
+            else
+                var d=Math.round(trigger)
+                document.getElementById("price").value = d;
+
+                console.log(d)
+
     }
 </script>
 
