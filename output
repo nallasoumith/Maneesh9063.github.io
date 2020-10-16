@@ -1,0 +1,58 @@
+#!/usr/bin/env groovy
+
+@Library("com.optum.jenkins.pipeline.library@master")
+@Library("com.optum.polarissrchdir.jenkins.pipeline.library@master") _
+
+pdcAPIPipeline( 'jenkinsfile-location':'/home/jenkins/workspace/api-organization-search/Jenkinsfile.groovy',
+        'service-name':'Provider Elastic Search - API ORGANIZATION SEARCH',
+        'service-name-abv':'api-location-search',
+        'common-id':'a35bd7bf-3e1e-40cc-9e6e-69c1a7f34993',
+        'git-secret':'a340b0c4-7a3f-40fa-875f-3a23756a8017',
+        'route-name':'location-search',
+        'openshift-cluster':'https://ocp-ctc-core-nonprod.optum.com',
+        'openshift-stage-cluster':'https://origin-elr-core.optum.com',
+        'openshift-project':'ps-alpha',
+        'openshift-stage-project':'ps-elr-stage',
+        'openshift-service-name':'api-organization-search',
+        'deployment-config':'api-deployment-config',
+        'openshift-test-env-config':'openshift-configs/api-location-search-alpha.yml',
+        'openshift-stage-env-config':'openshift-configs/api-location-search-stage.yml',
+        'proc-config':'alpha-config',
+        'proc-stage-config':'stage-config',
+        'env-config':'api-organization-search-alpha-config',
+        'stage-env-config':'api-organization-search-stage-config',
+        'openshift-password-secret':'credentials',
+        'openshift-certificates':'certificates',
+        'pdp-email':'soumith_nalla@optum.com',
+        'fortify-build-name':'apilocationsearch',
+        'fortify-project-version':'22897',
+        'fortify-project-name':'ProviderSearchusingBDPaaS_UHGWM110-014470',
+        'fortify-source-directory':'/home/jenkins/workspace/api-organization-search',
+        'fortify-upload-token':'b739aa4e-73f8-4bef-afcf-49f56234cffb',
+        'fortify-jdk-version':'1.8',
+
+
+        'basepath-name':'api-basepath',
+        'postman-non-prod-es-server':'apsrs9273.uhc.com',
+        'postman-non-prod-es-port':'9200',
+        'postman-collection-location':'src/test/postman/api-organization-search.postman_collection.json',
+        'postman-test-folder':'Automated-Tests',
+        'es-alias1':'organizationAsrchalias',
+        'es-alias2':'organizationIdsrchalias',
+        'es-alias3':'organizationsrchalias',
+        'es-alias4':'ecommsrchalias',
+        'postman-alpha-es-alias1':'alpha_fhir_organization_alias',
+        'postman-stage-es-alias1':'stage_fhir_organization_alias',
+        'postman-alpha-es-alias2':'alpha_id_organization_search_alias',
+        'postman-stage-es-alias2':'stage_id_organization_search_alias',
+        'postman-alpha-es-alias3':'alpha_organization_search_alias',
+        'postman-stage-es-alias3':'stage_organization_search_alias',
+        'postman-alpha-es-alias4':'alpha_provider_electronic_communications_ndb_alias',
+        'postman-stage-es-alias4':'stage_provider_electronic_communications_ndb_alias',
+        'resource-name':'/api/pdr/organizations/v1/search',
+        'twistlock-creds' : 'a22b8747-1e6a-47ad-9ee6-672dca5ee93f'
+        //meregd the two pipelines
+        //git commit stage to run
+
+)
+
