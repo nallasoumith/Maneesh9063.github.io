@@ -1,0 +1,223 @@
+#!/usr/bin/env groovy
+
+@Library("com.optum.jenkins.pipeline.library@master")
+@Library("com.optum.polarissrchdir.jenkins.pipeline.library@master") _
+
+pipeline {
+    agent {
+        label 'docker-maven-slave'
+    }
+    environment {
+        DEVOPS_METRICS_ENABLED = 'true'
+        COMMONID = 'a35bd7bf-3e1e-40cc-9e6e-69c1a7f34993'
+        DOCKER_NAMESPACE = 'provider-search-platform'
+        DOCKER_ARTIFACTORY = 'docker.repo1.uhc.com'
+        SERVICE_NAME_ABV = 'api-location-search'
+        ROUTE_NAME  = 'location-search'
+        OPENSHIFT_CLUSTER = 'https://ocp-ctc-core-nonprod.optum.com'
+        OPENSHIFT_STAGE_CLUSTER = 'https://origin-elr-core.optum.com'
+        OPENSHIFT_PROJECT = 'ps-alpha'
+        OPENSHIFT_STAGE_PROJECT = 'ps-elr-stage'
+        OPENSHIFT_SERVICE_NAME = 'api-location-search'
+        DEPLOYMENT_CONFIG = 'api-deployment-config'
+        OPENSHIFT_TEST_ENV_CONFIG = 'openshift-configs/api-location-search-alpha.yml'
+        OPENSHIFT_STAGE_ENV_CONFIG = 'openshift-configs/api-location-search-stage.yml'
+        PROC_CONFIG = 'alpha-config'
+        PROC_STAGE_CONFIG = 'stage-config'
+        ENV_CONFIG = 'api-location-search-alpha-config'
+        STAGE_ENV_CONFIG = 'api-location-search-stage-config'
+        DOCKER_TEST_TAG = 'test'
+        OPENSHIFT_PASSWORD_SECRET = 'credentials'
+        OPENSHIFT_CERTIFICATES = 'certificates'
+        JENKINSFILE_LOCATION = '/home/jenkins/workspace/api-location-search/Jenkinsfile.groovy'
+        GIT_SECRET = 'a340b0c4-7a3f-40fa-875f-3a23756a8017'
+        PDP_EMAIL = 'PDP_PES_Kryptonites_DL@ds.uhc.com'
+        FORTIFY_PROJECT_VERSION = '22897'
+
+    }
+
+
+    stages {
+
+        stage('Build: Maven Build') {
+            steps {
+                glMavenBuild additionalProps: ['ci.env': '']
+            }
+        }
+
+        stage('Build: Sonar Scan') {
+            steps {
+                glSonarMavenScan gitUserCredentialsId: "vmounik4"
+            }
+        }
+
+        stage('Build: Fortify Scan') {
+
+            steps {
+                // Zero (0) critical or high defects can be present in source code in order to deploy to production.
+                // If fortify scan is only done one time for a code image/deployment, then prod thresholds MUST apply here
+
+                //TODO: look at parameterizing the scar upload token to be a Jenkins secret, or implement fortifyscanjava function to avoid having to do token rotation
+                glFortifyScanMaven fortifyBuildName: "apilocationsearch",
+
+                        scarUploadToken: "b739aa4e-73f8-4bef-afcf-49f56234cffb",
+
+                        scarProjectName: "ProviderSearchusingBDPaaS_UHGWM110-014470",
+
+                        scarProjectVersion: "22897",
+
+                        source: "/home/jenkins/workspace/api-location-search",
+
+                        fortifyTranslateExclusions: "src/main/resources/**/*.*,src/test/**/*.*,target/**/*.*",
+
+                        fortifyJdkVersion: "1.8",
+
+                        isGenerateDevWorkbook: true,
+
+                        uploadToScar: false,
+
+                        wait: false,
+
+                        criticalThreshold: 0,
+
+                        highThreshold: 0,
+
+                        mediumThreshold: 50,
+
+                        lowThreshold: 100,
+
+                        isVerbose: true
+
+                sh '''/tools/fortify/Fortify_SCA_and_Apps_19.2.0/bin/fortifyclient uploadFPR -f fortify_results/apilocationsearch.fpr -applicationVersionID 22897 -url https://scar.uhc.com/ssc -authtoken b739aa4e-73f8-4bef-afcf-49f56234cffb'''
+            }
+        }
+
+
+
+        stage('Build: Docker Image and Push to DTR') {
+            steps {
+                pdcDockerAppendMetadata()
+                glDockerImageBuildPush tag: '${DOCKER_ARTIFACTORY}/${DOCKER_NAMESPACE}/${SERVICE_NAME_ABV}:latest', dockerCredentialsId: COMMONID, dockerHost: DOCKER_ARTIFACTORY
+            }
+        }
+
+
+        stage('Deploy: Alpha') {
+            steps {
+
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: COMMONID, passwordVariable: 'OC_PASSWORD', usernameVariable: 'OC_USER']]) {
+                    sh '''oc login --server=$OPENSHIFT_CLUSTER -u=${OC_USER} -p=${OC_PASSWORD} --insecure-skip-tls-verify'''
+                    sh '''oc project $OPENSHIFT_PROJECT'''
+                    sh '''oc apply -f openshift-configs/api-location-search-alpha.yml'''
+                    psdDockerRetagRemoteImage dockerCredentialsId: COMMONID,
+                            namespace: DOCKER_NAMESPACE,
+                            repository: SERVICE_NAME_ABV,
+                            sourceTag: "latest",
+                            destTag: "${DOCKER_TEST_TAG}"
+
+                    sh '''oc login --server=$OPENSHIFT_CLUSTER -u=${OC_USER} -p=${OC_PASSWORD} --insecure-skip-tls-verify'''
+                    sh '''oc project $OPENSHIFT_PROJECT'''
+                    command '''oc apply -f $OPENSHIFT_TEST_ENV_CONFIG'''
+                    command '''oc process $DEPLOYMENT_CONFIG -p APP_NAME=$OPENSHIFT_SERVICE_NAME -p APP_NAME_BASE=$OPENSHIFT_SERVICE_NAME -p OCP_PROJECT=$OPENSHIFT_PROJECT -p ENV_CONFIG=$ENV_CONFIG -p PROC_CONFIG=$PROC_CONFIG -p IMAGE_TAG=$DOCKER_TEST_TAG -p PASSWORDS=$OPENSHIFT_PASSWORD_SECRET -p CERTIFICATES=$OPENSHIFT_CERTIFICATES -p OC_ENV=${OPENSHIFT_CLUSTER:8} -p ROUTE_NAME=$ROUTE_NAME| oc apply -f -'''
+                    command '''oc rollout latest $OPENSHIFT_SERVICE_NAME'''
+                    sh '''oc get pods | grep $OPENSHIFT_SERVICE_NAME- | grep -v deploy | grep -v build | awk '$3 == "Running" {print $1}' > runningPod.txt'''
+                    script {
+                        def runningPod = readFile('runningPod.txt').trim()
+                        retry(60, 10) {
+                            echo "Has pod " + runningPod + " been killed yet?"
+                            sh '''oc get pod $(cat runningPod.txt) | grep $OPENSHIFT_SERVICE_NAME- | awk '{print $1}' > currentPod.txt'''
+                            def currentPod = readFile('currentPod.txt').trim()
+                            print runningPod + " " + currentPod
+                            if (runningPod == currentPod) {
+                                throw new Exception("Not yet deployed.")
+                            }
+                        }
+                    }
+                    sh '''oc delete rc $(oc get rc | awk '$2 == 0 {print $1}') || true'''
+                    sh '''oc logout'''
+
+                }
+            }
+        }
+
+        //TODO: Stage deployment stages should take place after input for the Milestone ID but before JUnit or Acceptance test capture for the CM2 compliance report
+        //TODO: Currently, trigger of Milestone and subsequent Stage deployment steps will be done through a user input stage, but should be replaced by a git commit message capture to trigger
+
+        stage('Input: Trigger Stage Deployment') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    input(
+                            message: 'Trigger Subsequent Stage Deploy/Test Activities?'
+                    )
+                }
+            }
+        }
+
+        stage('Deploy: Stage') {
+            steps {
+
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: COMMONID, passwordVariable: 'OC_PASSWORD', usernameVariable: 'OC_USER']]) {
+                    sh '''oc login --server=$OPENSHIFT_STAGE_CLUSTER -u=${OC_USER} -p=${OC_PASSWORD} --insecure-skip-tls-verify'''
+                    sh '''oc project $OPENSHIFT_STAGE_PROJECT'''
+                    sh '''oc apply -f openshift-configs/api-location-search-stage.yml'''
+                    psdDockerRetagRemoteImage dockerCredentialsId: COMMONID,
+                            namespace: DOCKER_NAMESPACE,
+                            repository: SERVICE_NAME_ABV,
+                            sourceTag: "latest",
+                            destTag: "${DOCKER_TEST_TAG}"
+
+                    sh '''oc login --server=$OPENSHIFT_STAGE_CLUSTER -u=${OC_USER} -p=${OC_PASSWORD} --insecure-skip-tls-verify'''
+                    sh '''oc project $OPENSHIFT_STAGE_PROJECT'''
+                    command '''oc apply -f $OPENSHIFT_STAGE_ENV_CONFIG'''
+                    command '''oc process $DEPLOYMENT_CONFIG -p APP_NAME=$OPENSHIFT_SERVICE_NAME -p APP_NAME_BASE=$OPENSHIFT_SERVICE_NAME -p OCP_PROJECT=$OPENSHIFT_STAGE_PROJECT -p ENV_CONFIG=$STAGE_ENV_CONFIG -p PROC_CONFIG=$PROC_STAGE_CONFIG -p IMAGE_TAG=$DOCKER_TEST_TAG -p PASSWORDS=$OPENSHIFT_PASSWORD_SECRET -p CERTIFICATES=$OPENSHIFT_CERTIFICATES -p OC_ENV=${OPENSHIFT_STAGE_CLUSTER:8} -p ROUTE_NAME=$ROUTE_NAME| oc apply -f -'''
+                    command '''oc rollout latest $OPENSHIFT_SERVICE_NAME'''
+                    sh '''oc get pods | grep $OPENSHIFT_SERVICE_NAME- | grep -v deploy | grep -v build | awk '$3 == "Running" {print $1}' > runningPod.txt'''
+                    script {
+                        def runningPod = readFile('runningPod.txt').trim()
+                        retry(60, 10) {
+                            echo "Has pod " + runningPod + " been killed yet?"
+                            sh '''oc get pod $(cat runningPod.txt) | grep $OPENSHIFT_SERVICE_NAME- | awk '{print $1}' > currentPod.txt'''
+                            def currentPod = readFile('currentPod.txt').trim()
+                            print runningPod + " " + currentPod
+                            if (runningPod == currentPod) {
+                                throw new Exception("Not yet deployed.")
+                            }
+                        }
+                    }
+                    sh '''oc delete rc $(oc get rc | awk '$2 == 0 {print $1}') || true'''
+                    sh '''oc logout'''
+
+                }
+            }
+        }
+    }
+    post {
+        success {
+            psdSendSuccessEmail(PDP_EMAIL)
+        }
+        failure {
+            psdSendFailureEmail(PDP_EMAIL)
+        }
+        unstable {
+            psdSendUnstableEmail(PDP_EMAIL)
+        }
+    }
+
+}
+
+
+def retry(int times = 5, int delay = 0, Closure errorHandler = { e -> println e.message }
+          , Closure body) {
+    int retries = 0
+    def exceptions = []
+    while (retries++ < times) {
+        try {
+            sleep delay
+            return body.call()
+        } catch (e) {
+            exceptions << e
+            errorHandler.call(e)
+        }
+    }
+    throw new Exception("Failed after $times retries")
+}
